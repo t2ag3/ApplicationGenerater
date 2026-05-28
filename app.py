@@ -117,15 +117,15 @@ PROVIDERS = {
             "[無料] nousresearch/hermes-3-llama-3.1-405b:free",
             "[無料] openrouter/free",
             # ── 有料モデル ──────────────────────────────────────
-            "meta-llama/llama-4-maverick",
-            "anthropic/claude-sonnet-4-6",
-            "anthropic/claude-opus-4-6-fast",
-            "openai/gpt-4o",
-            "openai/o3-mini",
-            "google/gemini-2.0-flash-001",
-            "google/gemini-2.5-pro-preview",
-            "deepseek/deepseek-chat-v3-0324",
-            "mistralai/mistral-large",
+            #"meta-llama/llama-4-maverick",
+            #"anthropic/claude-sonnet-4-6",
+            #"anthropic/claude-opus-4-6-fast",
+            #"openai/gpt-4o",
+            #"openai/o3-mini",
+            #"google/gemini-2.0-flash-001",
+            #"google/gemini-2.5-pro-preview",
+            #"deepseek/deepseek-chat-v3-0324",
+            #"mistralai/mistral-large",
         ],
         "key_placeholder": "sk-or-...",
         "key_url": "https://openrouter.ai/keys",
@@ -400,8 +400,10 @@ def call_ai(user_message: str) -> str:
     prov = PROVIDERS[provider_name]
     pid  = prov["id"]
     model = st.session_state.model.replace("[無料] ", "")
-    api_key = st.session_state.api_keys.get(pid, "")
-
+    if pid == "openrouter":
+        api_key = st.secrets.get("OPENROUTER_API_KEY", "") or st.session_state.api_keys.get(pid, "")
+    else:
+        api_key = st.session_state.api_keys.get(pid, "")
     msgs = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
     msgs.append({"role": "user", "content": user_message})
 
@@ -617,7 +619,8 @@ with col_chat:
 
     # APIキー未設定チェック
     cur_pid = PROVIDERS[st.session_state.provider_name]["id"]
-    if not st.session_state.api_keys.get(cur_pid):
+    has_secret = cur_pid == "openrouter" and st.secrets.get("OPENROUTER_API_KEY", "")
+    if not st.session_state.api_keys.get(cur_pid) and not has_secret:
         st.warning("⬆️ 上の設定パネルでAPIキーを入力してください")
         st.stop()
 
