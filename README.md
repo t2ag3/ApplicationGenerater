@@ -1,0 +1,2 @@
+# ApplicationGenerater
+開発供給実施計画の申請書類を作成するAIアプリ
