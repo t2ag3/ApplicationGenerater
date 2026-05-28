@@ -42,62 +42,62 @@ html, body, [class*="css"] { font-family: 'Noto Sans JP', sans-serif; }
 
 # ─── プロバイダー設定 ─────────────────────────────────────────────────────────
 PROVIDERS = {
-    "Claude (Anthropic)": {
-        "id": "claude",
-        "badge": "badge-claude",
-        "models": [
-            "claude-sonnet-4-20250514",
-            "claude-opus-4-20250514",
-            "claude-haiku-4-5-20251001",
-        ],
-        "key_placeholder": "sk-ant-...",
-        "key_url": "https://console.anthropic.com",
-    },
-    "Gemini (Google)": {
-        "id": "gemini",
-        "badge": "badge-gemini",
-        "models": [
-            "gemini-2.0-flash",
-            "gemini-2.5-pro-preview-05-06",
-            "gemini-1.5-pro",
-        ],
-        "key_placeholder": "AIza...",
-        "key_url": "https://aistudio.google.com/app/apikey",
-    },
-    "ChatGPT (OpenAI)": {
-        "id": "openai",
-        "badge": "badge-openai",
-        "models": [
-            "gpt-4o",
-            "gpt-4o-mini",
-            "gpt-4-turbo",
-            "o3-mini",
-        ],
-        "key_placeholder": "sk-...",
-        "key_url": "https://platform.openai.com/api-keys",
-    },
-    "Groq": {
-        "id": "groq",
-        "badge": "badge-groq",
-        "models": [
+    #"Claude (Anthropic)": {
+    #    "id": "claude",
+    #    "badge": "badge-claude",
+    #    "models": [
+    #        "claude-sonnet-4-20250514",
+    #        "claude-opus-4-20250514",
+    #        "claude-haiku-4-5-20251001",
+    #    ],
+    #    "key_placeholder": "sk-ant-...",
+    #    "key_url": "https://console.anthropic.com",
+    #},
+    #"Gemini (Google)": {
+    #    "id": "gemini",
+    #    "badge": "badge-gemini",
+    #    "models": [
+    #        "gemini-2.0-flash",
+    #        "gemini-2.5-pro-preview-05-06",
+    #        "gemini-1.5-pro",
+    #    ],
+    #    "key_placeholder": "AIza...",
+    #    "key_url": "https://aistudio.google.com/app/apikey",
+    #},
+    #"ChatGPT (OpenAI)": {
+    #    "id": "openai",
+    #    "badge": "badge-openai",
+    #    "models": [
+    #        "gpt-4o",
+    #        "gpt-4o-mini",
+    #        "gpt-4-turbo",
+    #        "o3-mini",
+    #    ],
+    #    "key_placeholder": "sk-...",
+    #    "key_url": "https://platform.openai.com/api-keys",
+    #},
+    #"Groq": {
+    #    "id": "groq",
+    #    "badge": "badge-groq",
+    #    "models": [
             # ── 高速・低コスト（おすすめ） ──────────────────────
-            "llama-3.3-70b-versatile",        # 汎用・高品質  $0.59/$0.79
-            "llama-3.1-8b-instant",            # 超高速・格安  $0.05/$0.08
-            "qwen/qwen3-32b",                  # 推論強化      $0.29/$0.59
+    #        "llama-3.3-70b-versatile",        # 汎用・高品質  $0.59/$0.79
+    #        "llama-3.1-8b-instant",            # 超高速・格安  $0.05/$0.08
+    #        "qwen/qwen3-32b",                  # 推論強化      $0.29/$0.59
             # ── GPT-OSS（OpenAI公式OSS） ─────────────────────
-            "openai/gpt-oss-120b",             # 高性能        $0.15/$0.60
-            "openai/gpt-oss-20b",              # バランス型    $0.075/$0.30
+    #        "openai/gpt-oss-120b",             # 高性能        $0.15/$0.60
+    #        "openai/gpt-oss-20b",              # バランス型    $0.075/$0.30
             # ── Meta Llama 4 ─────────────────────────────────
-            "meta-llama/llama-4-scout-17b-16e-instruct",  # Llama4 Scout $0.11/$0.34
+    #        "meta-llama/llama-4-scout-17b-16e-instruct",  # Llama4 Scout $0.11/$0.34
             # ── Kimi K2（長文対応） ───────────────────────────
-            "moonshotai/kimi-k2-instruct-0905",# 長文・高品質  $1.00/$3.00
+    #        "moonshotai/kimi-k2-instruct-0905",# 長文・高品質  $1.00/$3.00
             # ── 推論モデル ────────────────────────────────────
-            "qwen-qwq-32b",                    # 推論特化
-            "deepseek-r1-distill-llama-70b",   # 推論特化
-        ],
-        "key_placeholder": "gsk_...",
-        "key_url": "https://console.groq.com/keys",
-    },
+    #        "qwen-qwq-32b",                    # 推論特化
+    #        "deepseek-r1-distill-llama-70b",   # 推論特化
+    #    ],
+    #    "key_placeholder": "gsk_...",
+    #    "key_url": "https://console.groq.com/keys",
+    #},
     "OpenRouter": {
         "id": "openrouter",
         "badge": "badge-openrouter",
