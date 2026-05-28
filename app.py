@@ -127,8 +127,8 @@ PROVIDERS = {
             #"deepseek/deepseek-chat-v3-0324",
             #"mistralai/mistral-large",
         ],
-        "key_placeholder": "sk-or-...",
-        "key_url": "https://openrouter.ai/keys",
+        #"key_placeholder": "sk-or-...",
+        #"key_url": "https://openrouter.ai/keys",
     },
 }
 
