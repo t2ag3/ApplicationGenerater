@@ -36,6 +36,7 @@ html, body, [class*="css"] { font-family: 'Noto Sans JP', sans-serif; }
 .badge-gemini  { background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; }
 .badge-openai  { background:#e0f2f1; color:#00695c; border:1px solid #80cbc4; }
 .badge-openrouter { background:#fce4ec; color:#c62828; border:1px solid #ef9a9a; }
+.badge-groq      { background:#fff8e1; color:#e65100; border:1px solid #ffcc02; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -74,6 +75,28 @@ PROVIDERS = {
         ],
         "key_placeholder": "sk-...",
         "key_url": "https://platform.openai.com/api-keys",
+    },
+    "Groq": {
+        "id": "groq",
+        "badge": "badge-groq",
+        "models": [
+            # ── 高速・低コスト（おすすめ） ──────────────────────
+            "llama-3.3-70b-versatile",        # 汎用・高品質  $0.59/$0.79
+            "llama-3.1-8b-instant",            # 超高速・格安  $0.05/$0.08
+            "qwen/qwen3-32b",                  # 推論強化      $0.29/$0.59
+            # ── GPT-OSS（OpenAI公式OSS） ─────────────────────
+            "openai/gpt-oss-120b",             # 高性能        $0.15/$0.60
+            "openai/gpt-oss-20b",              # バランス型    $0.075/$0.30
+            # ── Meta Llama 4 ─────────────────────────────────
+            "meta-llama/llama-4-scout-17b-16e-instruct",  # Llama4 Scout $0.11/$0.34
+            # ── Kimi K2（長文対応） ───────────────────────────
+            "moonshotai/kimi-k2-instruct-0905",# 長文・高品質  $1.00/$3.00
+            # ── 推論モデル ────────────────────────────────────
+            "qwen-qwq-32b",                    # 推論特化
+            "deepseek-r1-distill-llama-70b",   # 推論特化
+        ],
+        "key_placeholder": "gsk_...",
+        "key_url": "https://console.groq.com/keys",
     },
     "OpenRouter": {
         "id": "openrouter",
@@ -301,8 +324,8 @@ def init_session():
     defaults = {
         "messages": [],
         "collected_data": {},
-        "provider_name": "Claude (Anthropic)",
-        "model": "claude-sonnet-4-20250514",
+        "provider_name": "Groq",
+        "model": "llama-3.3-70b-versatile",
         "api_keys": {},   # {provider_id: key}
     }
     for k, v in defaults.items():
@@ -361,6 +384,18 @@ def call_ai(user_message: str) -> str:
         client = OpenAI(
             api_key=api_key,
             base_url="https://openrouter.ai/api/v1",
+        )
+        openai_msgs = [{"role": "system", "content": SYSTEM_PROMPT}] + msgs
+        resp = client.chat.completions.create(
+            model=model, max_tokens=2000, messages=openai_msgs,
+        )
+        return resp.choices[0].message.content
+
+    elif pid == "groq":
+        from openai import OpenAI
+        client = OpenAI(
+            api_key=api_key,
+            base_url="https://api.groq.com/openai/v1",
         )
         openai_msgs = [{"role": "system", "content": SYSTEM_PROMPT}] + msgs
         resp = client.chat.completions.create(
