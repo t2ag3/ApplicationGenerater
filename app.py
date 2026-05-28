@@ -350,6 +350,8 @@ def init_session():
         "provider_name": "Groq",
         "model": "llama-3.3-70b-versatile",
         "api_keys": {},   # {provider_id: key}
+        "uploaded_file_text": "",   # アップロードファイルのテキスト
+        "uploaded_file_name": "",
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -482,6 +484,52 @@ def count_filled():
     filled = sum(len(v) for v in st.session_state.collected_data.values())
     return filled, total
 
+
+def extract_text_from_file(uploaded_file) -> str:
+    """アップロードファイルからテキストを抽出する"""
+    name = uploaded_file.name.lower()
+    raw = uploaded_file.read()
+
+    if name.endswith(".docx"):
+        import io
+        from docx import Document
+        doc = Document(io.BytesIO(raw))
+        lines = []
+        for para in doc.paragraphs:
+            if para.text.strip():
+                lines.append(para.text)
+        # テーブルも抽出
+        for table in doc.tables:
+            for row in table.rows:
+                cells = [c.text.strip() for c in row.cells if c.text.strip()]
+                if cells:
+                    lines.append("　".join(cells))
+        return "\n".join(lines)
+
+    elif name.endswith((".txt", ".md")):
+        for enc in ("utf-8", "utf-8-sig", "cp932", "shift_jis"):
+            try:
+                return raw.decode(enc)
+            except Exception:
+                continue
+        return raw.decode("utf-8", errors="replace")
+
+    else:
+        return ""
+
+
+def build_file_context(file_text: str, filename: str) -> str:
+    """アップロードファイルの内容をAIへの文脈として整形する"""
+    # 長すぎる場合は先頭3000文字に制限
+    truncated = file_text[:3000] + "\n\n（※長すぎるため以降省略）" if len(file_text) > 3000 else file_text
+    return (
+        f"\n\n【アップロードされたファイル: {filename}】\n"
+        "以下はユーザーがアップロードしたファイルの内容です。"
+        "このファイルの内容を踏まえて、認定要件の観点からレビュー・壁打ちを行い、"
+        "確定した情報はDATAタグで出力してください。\n\n"
+        f"{truncated}"
+    )
+
 def generate_docx():
     payload = {"created_at": datetime.now().strftime("%Y年%m月%d日"), "sections": st.session_state.collected_data}
     script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "generate_docx.js")
@@ -572,6 +620,62 @@ with col_chat:
         st.stop()
 
     st.subheader("💬 AIアシスタント")
+
+    # ── ファイルアップロード ───────────────────────────────────────────────
+    with st.expander("📂 ファイルをアップロード（Word / テキスト）", expanded=False):
+        st.caption("既存の資料・下書きをアップロードすると、AIがレビュー・壁打ち・転記を行います。")
+        uploaded = st.file_uploader(
+            "ファイルを選択",
+            type=["docx", "txt", "md"],
+            label_visibility="collapsed",
+            key="file_uploader",
+        )
+        col_mode1, col_mode2 = st.columns(2)
+        with col_mode1:
+            do_review  = st.button("📋 レビュー・壁打ち", use_container_width=True,
+                                   help="AIがファイルを読んで認定要件の観点から指摘・改善提案します")
+        with col_mode2:
+            do_transfer = st.button("📥 フォームに自動転記", use_container_width=True,
+                                    help="AIがファイルから情報を抽出してフォームに転記します")
+
+        if uploaded and (do_review or do_transfer):
+            with st.spinner("ファイルを読み込み中..."):
+                file_text = extract_text_from_file(uploaded)
+            if not file_text.strip():
+                st.error("テキストを抽出できませんでした。ファイルを確認してください。")
+            else:
+                st.session_state.uploaded_file_text = file_text
+                st.session_state.uploaded_file_name = uploaded.name
+                file_ctx = build_file_context(file_text, uploaded.name)
+
+                if do_review:
+                    prompt = (
+                        f"以下のファイル（{uploaded.name}）をアップロードしました。"
+                        "認定要件（スマート農業技術該当性・促進目標への対応・省力化の数値根拠・"
+                        "供給計画・事業採算性など）の観点から、問題点・不足点・改善すべき点を"
+                        "具体的に指摘してください。" + file_ctx
+                    )
+                    mode_label = "レビュー・壁打ち"
+                else:
+                    prompt = (
+                        f"以下のファイル（{uploaded.name}）をアップロードしました。"
+                        "ファイルの内容から申請書の各項目に対応する情報を抽出し、"
+                        "DATAタグを使ってフォームに転記してください。"
+                        "転記後、不足している項目や補強が必要な箇所を教えてください。" + file_ctx
+                    )
+                    mode_label = "自動転記"
+
+                st.session_state.messages.append({"role": "user", "content": f"[{mode_label}] {uploaded.name} をアップロードしました。"})
+                with st.spinner(f"AIが{mode_label}しています..."):
+                    try:
+                        reply = call_ai(prompt)
+                    except Exception as e:
+                        reply = f"⚠️ エラー: {e}"
+                st.session_state.messages.append({"role": "assistant", "content": reply})
+                extracted = extract_data_tags(reply)
+                if extracted:
+                    update_collected_data(extracted)
+                st.rerun()
 
     if not st.session_state.messages:
         st.session_state.messages.append({"role": "assistant", "content": INTRO})
