@@ -358,6 +358,40 @@ def init_session():
 init_session()
 
 # ─── AI呼び出し（マルチプロバイダー） ────────────────────────────────────────
+def build_system_prompt() -> str:
+    """SYSTEM_PROMPTに収集済みデータを動的付加して返す"""
+    cd = st.session_state.collected_data
+    if not any(cd.values()):
+        return SYSTEM_PROMPT
+
+    # 入力済み内容を整形
+    lines = ["\n\n【現在の入力済み内容（直接編集モードまたは過去の会話で収集済み）】"]
+    lines.append("以下の内容がすでに入力されています。これを踏まえた上で会話してください。")
+    lines.append("不足している項目・内容が薄い項目・認定要件上問題がある記述を積極的に指摘・改善提案してください。\n")
+
+    SECTION_LABELS = {
+        "basic_info"      : "申請者情報",
+        "project_overview": "事業概要",
+        "development_plan": "開発段階の取組",
+        "supply_plan"     : "供給段階の取組",
+        "implementation"  : "実施体制",
+        "budget"          : "資金計画",
+    }
+    for sec_id, sec_label in SECTION_LABELS.items():
+        fields = cd.get(sec_id, {})
+        if not fields:
+            continue
+        lines.append(f"■ {sec_label}")
+        for field, value in fields.items():
+            # 長すぎる場合は先頭300文字に抑える
+            v = value[:300] + "…" if len(value) > 300 else value
+            lines.append(f"  [{field}]: {v}")
+        lines.append("")
+
+    lines.append("【未入力の項目については、会話の中で順次確認・補完してください】")
+    return SYSTEM_PROMPT + "\n".join(lines)
+
+
 def call_ai(user_message: str) -> str:
     provider_name = st.session_state.provider_name
     prov = PROVIDERS[provider_name]
@@ -373,7 +407,7 @@ def call_ai(user_message: str) -> str:
         client = anthropic.Anthropic(api_key=api_key)
         resp = client.messages.create(
             model=model, max_tokens=2000,
-            system=SYSTEM_PROMPT, messages=msgs,
+            system=build_system_prompt(), messages=msgs,
         )
         return resp.content[0].text
 
@@ -382,7 +416,7 @@ def call_ai(user_message: str) -> str:
         genai.configure(api_key=api_key)
         gmodel = genai.GenerativeModel(
             model_name=model,
-            system_instruction=SYSTEM_PROMPT,
+            system_instruction=build_system_prompt(),
         )
         # Gemini はrole="model"を使う
         history = []
@@ -396,7 +430,7 @@ def call_ai(user_message: str) -> str:
     elif pid == "openai":
         from openai import OpenAI
         client = OpenAI(api_key=api_key)
-        openai_msgs = [{"role": "system", "content": SYSTEM_PROMPT}] + msgs
+        openai_msgs = [{"role": "system", "content": build_system_prompt()}] + msgs
         resp = client.chat.completions.create(
             model=model, max_tokens=2000, messages=openai_msgs,
         )
@@ -408,7 +442,7 @@ def call_ai(user_message: str) -> str:
             api_key=api_key,
             base_url="https://openrouter.ai/api/v1",
         )
-        openai_msgs = [{"role": "system", "content": SYSTEM_PROMPT}] + msgs
+        openai_msgs = [{"role": "system", "content": build_system_prompt()}] + msgs
         resp = client.chat.completions.create(
             model=model, max_tokens=2000, messages=openai_msgs,
         )
@@ -420,7 +454,7 @@ def call_ai(user_message: str) -> str:
             api_key=api_key,
             base_url="https://api.groq.com/openai/v1",
         )
-        openai_msgs = [{"role": "system", "content": SYSTEM_PROMPT}] + msgs
+        openai_msgs = [{"role": "system", "content": build_system_prompt()}] + msgs
         resp = client.chat.completions.create(
             model=model, max_tokens=2000, messages=openai_msgs,
         )
@@ -606,7 +640,10 @@ with col_preview:
     else:
         st.info("対話で情報を入力するとWordダウンロードが可能になります")
 
-    with st.expander("✏️ 直接編集モード"):
+    filled_count = sum(len(v) for v in cd.values())
+    edit_label = f"✏️ 直接入力モード（{filled_count}項目入力済み）" if filled_count else "✏️ 直接入力モード"
+    with st.expander(edit_label):
+        st.caption("ここで入力した内容はチャットのAIが自動的に参照します。入力後にチャットで「レビューして」と話しかけてください。")
         sel = st.selectbox("セクション", [s["title"] for s in SECTIONS], label_visibility="collapsed")
         sec_obj = next(s for s in SECTIONS if s["title"] == sel)
         sid = sec_obj["id"]
