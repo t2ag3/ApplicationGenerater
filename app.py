@@ -102,19 +102,9 @@ PROVIDERS = {
         "id": "openrouter",
         "badge": "badge-openrouter",
         "models": [
-            # ── 有料モデル ──────────────────────────────────────
-            "meta-llama/llama-4-maverick",
-            "anthropic/claude-sonnet-4-6",
-            "anthropic/claude-opus-4-6-fast",
-            "openai/gpt-4o",
-            "openai/o3-mini",
-            "google/gemini-2.0-flash-001",
-            "google/gemini-2.5-pro-preview",
-            "deepseek/deepseek-chat-v3-0324",
-            "mistralai/mistral-large",
             # ── 無料モデル（:free） ─────────────────────────────
-            "[無料] deepseek/deepseek-v4-flash:free",
             "[無料] nvidia/nemotron-3-super-120b-a12b:free",
+            "[無料] deepseek/deepseek-v4-flash:free",
             "[無料] openai/gpt-oss-120b:free",
             "[無料] meta-llama/llama-3.3-70b-instruct:free",
             "[無料] google/gemma-4-31b-it:free",
@@ -126,6 +116,16 @@ PROVIDERS = {
             "[無料] z-ai/glm-4.5-air:free",
             "[無料] nousresearch/hermes-3-llama-3.1-405b:free",
             "[無料] openrouter/free",
+            # ── 有料モデル ──────────────────────────────────────
+            "meta-llama/llama-4-maverick",
+            "anthropic/claude-sonnet-4-6",
+            "anthropic/claude-opus-4-6-fast",
+            "openai/gpt-4o",
+            "openai/o3-mini",
+            "google/gemini-2.0-flash-001",
+            "google/gemini-2.5-pro-preview",
+            "deepseek/deepseek-chat-v3-0324",
+            "mistralai/mistral-large",
         ],
         "key_placeholder": "sk-or-...",
         "key_url": "https://openrouter.ai/keys",
@@ -349,7 +349,7 @@ def init_session():
         "messages": [],
         "collected_data": {},
         "provider_name": "OpenRouter",
-        "model": "meta-llama/llama-4-maverick",
+        "model": "[無料] nvidia/nemotron-3-super-120b-a12b:free",
         "api_keys": {},   # {provider_id: key}
         "uploaded_file_text": "",   # アップロードファイルのテキスト
         "uploaded_file_name": "",
