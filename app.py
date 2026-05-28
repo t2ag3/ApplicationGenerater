@@ -79,11 +79,29 @@ PROVIDERS = {
         "id": "openrouter",
         "badge": "badge-openrouter",
         "models": [
-            "anthropic/claude-sonnet-4-5",
-            "google/gemini-2.0-flash-001",
+            # ── 無料モデル（:free） ─────────────────────────────
+            "[無料] deepseek/deepseek-v4-flash:free",
+            "[無料] nvidia/nemotron-3-super-120b-a12b:free",
+            "[無料] openai/gpt-oss-120b:free",
+            "[無料] meta-llama/llama-3.3-70b-instruct:free",
+            "[無料] google/gemma-4-31b-it:free",
+            "[無料] minimax/minimax-m2.5:free",
+            "[無料] qwen/qwen3-coder:free",
+            "[無料] moonshotai/kimi-k2.6:free",
+            "[無料] qwen/qwen3-next-80b-a3b-instruct:free",
+            "[無料] openai/gpt-oss-20b:free",
+            "[無料] z-ai/glm-4.5-air:free",
+            "[無料] nousresearch/hermes-3-llama-3.1-405b:free",
+            "[無料] openrouter/free",
+            # ── 有料モデル ──────────────────────────────────────
+            "anthropic/claude-sonnet-4-6",
+            "anthropic/claude-opus-4-6-fast",
             "openai/gpt-4o",
-            "meta-llama/llama-4-maverick",
+            "openai/o3-mini",
+            "google/gemini-2.0-flash-001",
+            "google/gemini-2.5-pro-preview",
             "deepseek/deepseek-chat-v3-0324",
+            "meta-llama/llama-4-maverick",
             "mistralai/mistral-large",
         ],
         "key_placeholder": "sk-or-...",
@@ -298,7 +316,7 @@ def call_ai(user_message: str) -> str:
     provider_name = st.session_state.provider_name
     prov = PROVIDERS[provider_name]
     pid  = prov["id"]
-    model = st.session_state.model
+    model = st.session_state.model.replace("[無料] ", "")
     api_key = st.session_state.api_keys.get(pid, "")
 
     msgs = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
