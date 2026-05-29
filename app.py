@@ -575,7 +575,8 @@ col_chat, col_preview = st.columns([3, 2], gap="large")
 with col_chat:
 
     # ── AIプロバイダー設定パネル ──────────────────────────────────────────────
-    with st.expander("⚙️ AIプロバイダー設定", expanded=not st.session_state.api_keys):
+    #with st.expander("⚙️ AIプロバイダー設定", expanded=not st.session_state.api_keys):
+    with st.expander("⚙️ AIプロバイダー設定", expanded=False):
         selected_provider = st.selectbox(
             "使用するAI",
             options=list(PROVIDERS.keys()),
