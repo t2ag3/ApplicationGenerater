@@ -403,6 +403,7 @@ def call_ai(user_message: str) -> str:
         openai_msgs = [{"role": "system", "content": build_system_prompt()}] + msgs
         resp = client.chat.completions.create(
             model=model, max_tokens=2000, messages=openai_msgs,
+            default_headers={"X-Data-Policy": "no-training"}
         )
         return resp.choices[0].message.content
 
@@ -584,7 +585,8 @@ with col_chat:
 
     # APIキー未設定チェック
     cur_pid = PROVIDERS[st.session_state.provider_name]["id"]
-    if not st.session_state.api_keys.get(cur_pid):
+    has_secret = cur_pid == "openrouter" and st.secrets.get("OPENROUTER_API_KEY", "")
+    if not st.session_state.api_keys.get(cur_pid) and not has_secret:
         st.warning("⬆️ 上の設定パネルでAPIキーを入力してください")
         st.stop()
 
